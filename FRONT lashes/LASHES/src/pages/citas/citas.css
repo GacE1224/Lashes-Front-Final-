@@ -1,0 +1,168 @@
+#root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 62.5%;
+    box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+body {
+    font-size: 16px;
+    /* 1rem = 10px */
+    font-family: 'krub', sans-serif;
+    background-image: linear-gradient(to top, var(--rose-gold) 0%, var(--acento) 100%);
+    /*PARA DEGRADADO*/
+
+}
+
+h1 {
+    font-size: 3.8rem;
+}
+
+h2 {
+    font-size: 2.8rem;
+}
+
+h3 {
+    font-size: 1.8rem;
+}
+
+h1,
+h2,
+h3 {
+    text-align: center;
+}
+
+
+
+.contenedor-app {
+
+    @media (min-width: 480px) {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        min-height: 100vh;
+    }
+
+    .imagen {
+        height: 20rem;
+        background-image: url(https://lash-demo.netlify.app/img/fondo_lateral.jpg);
+        background-size: cover;
+        background-position: center center;
+
+        @media (min-width: 480px) {
+            height: auto;
+        }
+
+    }
+
+    .app {
+        width: 95%;
+        margin: 0 auto;
+        padding: 3rem 0;
+    }
+}
+
+.nombre-pagina {
+    text-align: center;
+    margin: 5rem 0;
+    font-weight: 700;
+}
+
+.descripcion-pagina {
+    text-align: center;
+    margin-bottom: 3rem;
+    font-weight: 400;
+}
+
+
+.formulario2 {
+    margin-top: 5rem;
+    width: 100%;
+}
+
+.campo2 {
+    display: flex;
+    margin-bottom: 2rem;
+    padding-right: 3rem;
+    align-items: center;
+
+    label {
+        flex: 0 0 10rem;
+
+    }
+
+    input {
+        flex: 1;
+        border: none;
+        padding: calc(5rem/ 4);
+        border-radius: 1rem;
+
+        &:disabled {
+            background-color: lighten(var(--oscuro), 30%);
+            color: var(--blanco);
+            cursor: not-allowed;
+        }
+    }
+
+    select {
+        flex: 1;
+        border: none;
+        padding: calc(5rem/ 4);
+        border-radius: 1rem;
+
+        &:disabled {
+            background-color: lighten(var(--oscuro), 30%);
+            color: var(--blanco);
+            cursor: not-allowed;
+        }
+    }
+}
+
+.boton2 {
+    background-color: var(--acento);
+    color: var(--blanco);
+    padding: 1rem 3rem;
+    margin-top: 3rem;
+    font-size: 2rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    border-radius: .5rem;
+    width: 90%;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .boton2 {
+        width: auto;
+    }
+}
+
+
+.acciones {
+    margin-top: 5rem;
+
+    a {
+        color: var(--texto-fuerte);
+        display: block;
+        margin-bottom: calc(5rem / 2);
+        text-align: center;
+    }
+}
+
+@media (min-width: 768px) {
+    .acciones {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
