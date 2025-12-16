@@ -3,7 +3,7 @@ import './citasStyle.css';
 import { useNavigate } from 'react-router-dom';
 // 1. IMPORTANTE: Importamos tu configuración de Axios
 // (Asegúrate de que la ruta '../servicios/axios' sea correcta según tus carpetas)
-import { apiLashes } from '../servicios/axios'; 
+import { apiLashes } from '../../servicios/axios'; 
 
 const Citas = () => {
   const navigate = useNavigate();
