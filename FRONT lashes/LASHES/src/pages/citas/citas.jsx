@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import './citasStyle.css';
 import { useNavigate } from 'react-router-dom';
+// 1. IMPORTANTE: Importamos tu configuración de Axios
+// (Asegúrate de que la ruta '../servicios/axios' sea correcta según tus carpetas)
+import { apiLashes } from '../servicios/axios'; 
 
 const Citas = () => {
-
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     nombre: '',
     telefono: '',
@@ -16,15 +17,16 @@ const Citas = () => {
   });
 
   const [productos, setProductos] = useState([]);
-
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
+  // 2. CORRECCIÓN: Cargar productos usando apiLashes
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const res = await fetch("/api/catalogo/");
-        const data = await res.json();
+        // Usamos .get en lugar de fetch. 
+        // Ya no ponemos '/api' porque apiLashes ya lo tiene configurado en el baseURL.
+        const { data } = await apiLashes.get('/catalogo');
         setProductos(data);
       } catch (error) {
         console.error("Error al cargar productos:", error);
@@ -33,7 +35,6 @@ const Citas = () => {
 
     fetchProductos();
   }, []);
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,10 +67,7 @@ const Citas = () => {
     const fechaSeleccionada = new Date(`${formData.dia}T${formData.hora}:00`);
 
     if (fechaSeleccionada < ahora) {
-      setMessage({
-        type: "error",
-        text: "No puedes agendar una cita en una fecha u hora pasada.",
-      });
+      setMessage({ type: "error", text: "No puedes agendar una cita en una fecha u hora pasada." });
       return;
     }
 
@@ -87,19 +85,11 @@ const Citas = () => {
       costo: formData.costo,
     };
 
+    // 3. CORRECCIÓN: Enviar cita usando apiLashes (POST)
     try {
-      const response = await fetch('/api/citas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      // Axios envía el JSON automáticamente, no hace falta JSON.stringify ni headers manuales
+      const { data: citaGuardada } = await apiLashes.post('/citas', payload);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al crear la cita.');
-      }
-
-      const citaGuardada = await response.json();
       setMessage({ type: "success", text: "¡Cita agendada exitosamente!" });
 
       setTimeout(() => {
@@ -112,7 +102,9 @@ const Citas = () => {
 
     } catch (error) {
       console.error("Error al agendar cita:", error);
-      setMessage({ type: "error", text: error.message });
+      // Axios guarda el mensaje del backend en error.response.data
+      const errorMsg = error.response?.data?.message || error.message || "Error al crear la cita.";
+      setMessage({ type: "error", text: errorMsg });
     } finally {
       setIsLoading(false);
     }
@@ -120,53 +112,12 @@ const Citas = () => {
 
   return (
     <div className="contenedor-app">
-      {/*
-      <style>{`
-        .citas-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 20px;
-          font-family: Arial, sans-serif;
-        }
-        .citas-form {
-          background: #ffffff;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-          padding: 24px;
-          width: 100%;
-          max-width: 500px;
-        }
-        .form-message.success {
-          color: #155724;
-          background-color: #d4edda;
-          border: 1px solid #c3e6cb;
-          padding: 10px;
-          border-radius: 5px;
-          margin-top: 15px;
-          text-align: center;
-        }
-        .form-message.error {
-          color: #721c24;
-          background-color: #f8d7da;
-          border: 1px solid #f5c6cb;
-          padding: 10px;
-          border-radius: 5px;
-          margin-top: 15px;
-          text-align: center;
-        }
-      `}</style>
-      */}
       <div className="imagen"></div>
-
       <div className="app">
-
         <h2 className="nombre-pagina">Agenda tu Cita</h2>
         <p className="descripcion-pagina">Completa el formulario para reservar tu espacio en Studio Lashista.</p>
 
         <form className="formulario2" onSubmit={handleSubmit}>
-
           <div className="campo2">
             <label>Nombre Completo:</label>
             <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} required />
@@ -181,7 +132,6 @@ const Citas = () => {
             <label>Servicio Deseado:</label>
             <select name="producto" value={formData.producto} onChange={handleChange} required>
               <option value="">-- Selecciona un servicio --</option>
-
               {productos.length > 0 ? (
                 productos.map((prod) => (
                   <option key={prod._id} value={prod._id}>
@@ -191,10 +141,8 @@ const Citas = () => {
               ) : (
                 <option disabled>Cargando productos...</option>
               )}
-
             </select>
           </div>
-
 
           <div className="campo2">
             <label>Día:</label>
@@ -205,7 +153,6 @@ const Citas = () => {
             <label>Hora:</label>
             <input type="time" name="hora" value={formData.hora} onChange={handleChange} min="10:00" max="19:00" step="3600" required />
           </div>
-
 
           {message && (
             <div className={`form-message ${message.type}`}>{message.text}</div>
