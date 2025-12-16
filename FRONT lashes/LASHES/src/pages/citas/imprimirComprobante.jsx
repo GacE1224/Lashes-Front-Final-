@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-// import './ImprimirComprobante.css'; // Asegúrate de tener tu CSS importado
-
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+
+// 1. IMPORTAMOS AXIOS (Asegúrate de que la ruta sea correcta)
+// Si este archivo está en la misma carpeta que Citas.jsx, usa '../../'
+import { apiLashes } from '../../servicios/axios'; 
 
 const ImprimirComprobante = () => {
   const { id: citaId } = useParams();
@@ -14,68 +16,60 @@ const ImprimirComprobante = () => {
 
   const comprobanteRef = useRef(null);
 
-  // Consulta a la BD (Igual que antes)
+  // 2. CORRECCIÓN: Usamos apiLashes en lugar de fetch
   useEffect(() => {
     const fetchCita = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/citas/${citaId}`);
         
-        if (!response.ok) {
-          throw new Error('No se pudo encontrar la cita.');
-        }
-
-        const data = await response.json();
+        // Usamos .get. Axios ya sabe que la base es la URL de Render.
+        // Solo ponemos '/citas/${citaId}'
+        const { data } = await apiLashes.get(`/citas/${citaId}`);
+        
         setCita(data);
         setError(null);
 
       } catch (err) {
-        setError(err.message);
+        console.error("Error obteniendo cita:", err);
+        setError('No se pudo encontrar la información de la cita.');
         setCita(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchCita();
+    if (citaId) {
+        fetchCita();
+    }
   }, [citaId]);
 
-  // --- NUEVA FUNCIÓN PARA DESCARGAR PDF ---
   const handleDownloadPDF = () => {
     const input = comprobanteRef.current;
     
-    // 1. Capturamos el HTML como imagen de alta calidad
-    html2canvas(input, { scale: 2 }).then((canvas) => {
+    // Captura con mejor escala para que no se vea borroso
+    html2canvas(input, { 
+        scale: 2,
+        useCORS: true // Importante por si hay imágenes externas
+    }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
-      
-      // 2. Creamos el PDF (p = portrait/vertical, mm = milímetros, a4 = tamaño papel)
       const pdf = new jsPDF('p', 'mm', 'a4');
 
-      // 3. Calculamos las dimensiones para que encaje en el PDF
-      const pdfWidth = pdf.internal.pageSize.getWidth(); // Ancho del A4 (aprox 210mm)
-      const pdfHeight = pdf.internal.pageSize.getHeight(); // Alto del A4
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight(); // Variable no usada pero útil saberla
       
       const imgProps = pdf.getImageProperties(imgData);
-      
-      // Ajustamos el ancho de la imagen al ancho del PDF (menos márgenes si quieres)
-      // Aquí dejaremos 20mm de margen total (10mm a cada lado)
       const margin = 10;
       const imgWidth = pdfWidth - (margin * 2);
-      
-      // Calculamos la altura proporcional para no deformar la imagen
       const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-      // 4. Añadimos la imagen al PDF (x, y, ancho, alto)
       pdf.addImage(imgData, 'PNG', margin, 20, imgWidth, imgHeight);
-      
-      // 5. Guardamos el PDF
       pdf.save(`Comprobante_Lashista_${citaId}.pdf`);
     });
   };
 
-  // Funciones de formato 
   const formatFecha = (isoString) => {
     if(!isoString) return '';
+    // Aseguramos compatibilidad creando el objeto Date correctamente
     const date = new Date(isoString);
     return date.toLocaleDateString('es-MX', {
       day: 'numeric', month: 'long', year: 'numeric',
@@ -133,7 +127,6 @@ const ImprimirComprobante = () => {
 
         {/* === BOTONES DE ACCIÓN === */}
         <div className="comprobante-actions">
-          {/* Cambiamos el texto y la función del botón */}
           <button onClick={handleDownloadPDF} className="btn-download">
             Descargar Comprobante (PDF)
           </button>
@@ -145,7 +138,7 @@ const ImprimirComprobante = () => {
 
       </div>
       
-      {/* Estilos CSS Inline para asegurar que funcione rápido (puedes moverlos al .css) */}
+      {/* Estilos CSS Inline */}
       <style>{`
         .comprobante-page { display: flex; justify-content: center; padding: 40px; background: #f4f4f9; min-height: 100vh; }
         .comprobante-container { background: white; max-width: 400px; width: 100%; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
